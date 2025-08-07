@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Closet Organiser</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css" />
+    <!-- Load Firebase Auth early to allow for immediate auth check -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script>
+      // Quick auth check before page render
+      const firebaseConfig = {
+        apiKey: "AIzaSyBl3AgfG3r6mim4-iAVKsxBGQYEHurqOZI",
+        authDomain: "closet-organiser.firebaseapp.com",
+        projectId: "closet-organiser",
+        storageBucket: "closet-organiser.appspot.com",
+        messagingSenderId: "1056181704139",
+        appId: "1:1056181704139:web:9076ecc0a51c9be91c524e",
+        measurementId: "G-26SGF7D3MM",
+      };
+
+      // Initialize Firebase just for auth check
+      firebase.initializeApp(firebaseConfig);
+
+      // Immediate redirect if not logged in
+      firebase.auth().onAuthStateChanged(function (user) {
+        if (!user) {
+          console.log("No user signed in, redirecting from head script");
+          window.location.href = "login.html";
+        }
+      });
+    </script>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto p-4">
+      <header class="py-4 flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-800">Closet Organiser</h1>
+        <div class="flex items-center">
+          <span id="user-email" class="text-sm text-gray-600 mr-4"></span>
+          <button
+            id="logout-button"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm transition-colors"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <main class="mt-8">
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 class="text-xl font-semibold mb-4">Add Item</h2>
+          <form id="add-item-form" class="space-y-4">
+            <div>
+              <label
+                for="item-name"
+                class="block text-sm font-medium text-gray-700"
+                >Item Name</label
+              >
+              <input
+                type="text"
+                id="item-name"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="item-category"
+                class="block text-sm font-medium text-gray-700"
+                >Category</label
+              >
+              <select
+                id="item-category"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+              >
+                <option value="tops">Tops</option>
+                <option value="bottoms">Bottoms</option>
+                <option value="dresses">Dresses</option>
+                <option value="outerwear">Outerwear</option>
+                <option value="shoes">Shoes</option>
+                <option value="accessories">Accessories</option>
+              </select>
+            </div>
+            <div>
+              <label
+                for="item-color"
+                class="block text-sm font-medium text-gray-700"
+                >Color</label
+              >
+              <input
+                type="text"
+                id="item-color"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+              />
+            </div>
+            <div>
+              <label
+                for="item-season"
+                class="block text-sm font-medium text-gray-700"
+                >Season</label
+              >
+              <select
+                id="item-season"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+              >
+                <option value="all">All Seasons</option>
+                <option value="spring">Spring</option>
+                <option value="summer">Summer</option>
+                <option value="fall">Fall</option>
+                <option value="winter">Winter</option>
+              </select>
+            </div>
+
+            <!-- Image Input Section -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Item Image</label
+              >
+
+              <!-- Image Source Options -->
+              <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Choose upload method:</label
+                >
+                <div class="flex flex-wrap gap-2">
+                  <div
+                    class="flex-1 border rounded-md p-3 cursor-pointer hover:bg-blue-50 transition-colors group"
+                    id="url-option"
+                  >
+                    <input
+                      type="radio"
+                      id="image-source-url"
+                      name="image-source"
+                      value="url"
+                      checked
+                      class="hidden"
+                    />
+                    <label
+                      for="image-source-url"
+                      class="text-sm text-gray-700 font-medium cursor-pointer block text-center"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-6 w-6 mx-auto mb-1 text-gray-500 group-hover:text-blue-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                        />
+                      </svg>
+                      Link
+                    </label>
+                  </div>
+                  <div
+                    class="flex-1 border rounded-md p-3 cursor-pointer hover:bg-blue-50 transition-colors group"
+                    id="upload-option"
+                  >
+                    <input
+                      type="radio"
+                      id="image-source-upload"
+                      name="image-source"
+                      value="upload"
+                      class="hidden"
+                    />
+                    <label
+                      for="image-source-upload"
+                      class="text-sm text-gray-700 font-medium cursor-pointer block text-center"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-6 w-6 mx-auto mb-1 text-gray-500 group-hover:text-blue-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                        />
+                      </svg>
+                      Upload
+                    </label>
+                  </div>
+                  <div
+                    class="flex-1 border rounded-md p-3 cursor-pointer hover:bg-blue-50 transition-colors group"
+                    id="camera-option"
+                  >
+                    <input
+                      type="radio"
+                      id="image-source-camera"
+                      name="image-source"
+                      value="camera"
+                      class="hidden"
+                    />
+                    <label
+                      for="image-source-camera"
+                      class="text-sm text-gray-700 font-medium cursor-pointer block text-center"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-6 w-6 mx-auto mb-1 text-gray-500 group-hover:text-blue-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                      Camera
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- URL Input (default visible) -->
+              <div id="url-input-container">
+                <input
+                  type="url"
+                  id="item-image-url"
+                  placeholder="Enter image URL"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                />
+              </div>
+
+              <!-- File Upload Input (hidden by default) -->
+              <div id="file-input-container" class="hidden">
+                <div class="mb-2">
+                  <button
+                    type="button"
+                    id="browse-button"
+                    class="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md mb-2"
+                  >
+                    Browse for Images
+                  </button>
+                </div>
+                <input
+                  type="file"
+                  id="item-image-file"
+                  accept="image/*"
+                  class="hidden"
+                />
+                <div
+                  id="file-name-display"
+                  class="text-sm text-gray-700 mt-1 mb-2 min-h-[20px]"
+                ></div>
+                <p class="text-xs text-gray-500">
+                  Click the button above to select an image from your device
+                </p>
+              </div>
+
+              <!-- Camera Input (hidden by default) -->
+              <div id="camera-input-container" class="hidden">
+                <div
+                  class="relative bg-gray-100 rounded-md overflow-hidden"
+                  style="min-height: 200px"
+                >
+                  <video
+                    id="camera-preview"
+                    class="w-full h-auto rounded-md bg-gray-100 object-cover hidden"
+                    autoplay
+                    playsinline
+                    muted
+                  ></video>
+                  <canvas
+                    id="camera-canvas"
+                    class="w-full h-auto rounded-md bg-gray-100 object-cover hidden"
+                  ></canvas>
+                  <img
+                    id="captured-image"
+                    class="w-full h-auto rounded-md bg-gray-100 object-cover hidden"
+                  />
+                  <div
+                    id="camera-placeholder"
+                    class="absolute inset-0 flex items-center justify-center text-gray-400"
+                  >
+                    <div class="text-center">
+                      <p>Camera will appear here</p>
+                      <p class="text-xs mt-2">
+                        Make sure to allow camera permissions
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex justify-between mt-2">
+                  <button
+                    type="button"
+                    id="start-camera"
+                    class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md"
+                  >
+                    Start Camera
+                  </button>
+                  <button
+                    type="button"
+                    id="capture-photo"
+                    class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md hidden"
+                  >
+                    Capture
+                  </button>
+                  <button
+                    type="button"
+                    id="retake-photo"
+                    class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-md hidden"
+                  >
+                    Retake
+                  </button>
+                  <button
+                    type="button"
+                    id="switch-camera"
+                    class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-md hidden"
+                  >
+                    Switch Camera
+                  </button>
+                </div>
+                <div
+                  id="camera-status"
+                  class="mt-2 text-sm text-gray-700 min-h-[20px]"
+                ></div>
+              </div>
+
+              <!-- Image Preview -->
+              <div id="image-preview-container" class="mt-3 hidden">
+                <p class="text-sm text-gray-600 mb-1">Preview:</p>
+                <img
+                  id="image-preview"
+                  class="w-full h-40 rounded-md bg-gray-100 object-contain border"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md"
+            >
+              Add to Closet
+            </button>
+          </form>
+          <div class="mt-4">
+            <button
+              id="test-add-button"
+              class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md"
+              type="button"
+            >
+              Test Add Item (Debug)
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">My Closet Items</h2>
+            <div>
+              <select
+                id="filter-category"
+                class="rounded-md border-gray-300 shadow-sm p-2 border text-sm"
+              >
+                <option value="all">All Categories</option>
+                <option value="tops">Tops</option>
+                <option value="bottoms">Bottoms</option>
+                <option value="dresses">Dresses</option>
+                <option value="outerwear">Outerwear</option>
+                <option value="shoes">Shoes</option>
+                <option value="accessories">Accessories</option>
+              </select>
+            </div>
+          </div>
+          <div
+            id="closet-items"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
+            <!-- Items will be dynamically added here -->
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
